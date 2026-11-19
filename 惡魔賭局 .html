@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>惡魔賭局</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;900&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#080505;--panel:#110b0b;--blood:#b01414;--bone:#ece6d8;--dim:#8c8179;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 30%,#1c0d0d 0%,var(--bg) 70%);color:var(--bone);font-family:"Noto Serif TC","Songti TC",serif;user-select:none}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 160px 40px #000;z-index:5}
+#fl{position:fixed;inset:0;pointer-events:none;z-index:6;opacity:0}
+#fl.live{background:#c01212;animation:fl .7s}#fl.blank{background:#ddd;animation:fl .35s}
+@keyframes fl{0%{opacity:.75}100%{opacity:0}}
+.shake{animation:sh .4s}@keyframes sh{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+#msg{position:fixed;left:0;right:0;top:40%;text-align:center;font-size:clamp(20px,5vw,34px);font-weight:900;text-shadow:0 0 14px #b01414,0 2px 0 #000;pointer-events:none;z-index:8;opacity:0}
+#msg.show{animation:ms 2.2s}@keyframes ms{0%{opacity:0;transform:scale(.9)}10%,70%{opacity:1;transform:scale(1)}100%{opacity:0}}
+.wrap{max-width:900px;margin:0 auto;padding:14px 12px 40px}
+h1{font-size:clamp(40px,10vw,72px);margin:.3em 0 0;text-align:center;letter-spacing:.2em;color:var(--blood);text-shadow:0 0 18px #6a0a0a;animation:fk 4s infinite}
+@keyframes fk{0%,92%,100%{opacity:1}93%{opacity:.3}95%{opacity:1}97%{opacity:.5}}
+.sub{text-align:center;color:var(--dim);margin-bottom:28px}
+.box{background:var(--panel);border:3px double #6b5f57;border-radius:16px;padding:16px;box-shadow:0 0 24px #000}
+input{width:100%;background:#000;color:var(--bone);border:1px solid #5a4a44;border-radius:8px;padding:10px;font:inherit;margin:6px 0 12px}
+button{font:inherit;color:var(--bone);background:#1a1010;border:2px solid #6b5f57;border-radius:10px;padding:12px 18px;cursor:pointer}
+button:hover:not(:disabled){border-color:var(--blood);box-shadow:0 0 12px var(--blood)}button:disabled{opacity:.4;cursor:not-allowed}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px}.modes button{text-align:left;line-height:1.6}.modes b{font-size:20px;color:#fff;display:block}
+.top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;color:var(--dim);margin-bottom:10px}.top b{color:var(--bone)}
+.pl{border:3px double #4a3f39;border-radius:16px;padding:10px;background:#0d0808;transition:.3s}
+.pl.cur{border-color:var(--blood);box-shadow:0 0 22px #5a0b0b}
+.plate{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#000;border:2px solid #cfc7b8;border-radius:12px;padding:6px 12px}
+.plate .nm{font-family:inherit;font-weight:900;letter-spacing:.1em;border-bottom:2px solid #cfc7b8;padding:0 6px}
+.bolts{display:flex;gap:4px}.bolts svg{width:22px;height:26px}
+.tag{font-size:12px;border:1px solid var(--blood);color:#f66;border-radius:6px;padding:1px 6px}
+.hand{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;min-height:118px}.none{color:var(--dim);align-self:center}
+.card{width:78px;height:112px;background:#f3efe6;color:#111;border:4px double #111;border-radius:12px;cursor:pointer;transition:.15s;text-align:center;padding:4px 2px}
+.card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}.card .i{font-size:36px;line-height:1;filter:grayscale(1) contrast(1.4)}.card .n{font-weight:900;font-size:18px;white-space:nowrap}
+.card:hover{transform:translateY(-4px)}.card.sel{transform:translateY(-10px);box-shadow:0 0 16px var(--blood)}.card.dim{opacity:.55}
+.mid{text-align:center;padding:14px 4px}.stat{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:14px}
+.pill{border:1px solid #5a4a44;border-radius:20px;padding:3px 12px;background:#0b0707}.pill.red{border-color:var(--blood);color:#f77}
+#fire{font-size:22px;font-weight:900;letter-spacing:.3em;background:#3a0808;border-color:var(--blood);padding:14px 40px}
+#info{min-height:48px;margin:10px auto;max-width:560px;color:#d9cfc0;font-size:14px;line-height:1.6}#info b{color:#fff;font-size:16px}#info i{color:#f77;font-style:normal}
+.tbar{height:5px;background:#201414;border-radius:3px;margin:8px auto;max-width:420px;overflow:hidden}.tbar div{height:100%;background:var(--blood);width:100%}
+#log{color:var(--dim);font-size:13px;line-height:1.7;max-width:560px;margin:8px auto 0;text-align:left}#log div:first-child{color:var(--bone)}
+#ov{position:fixed;inset:0;z-index:9;display:none;align-items:center;justify-content:center;background:#000c}
+#ov.on{display:flex}#ov .box{max-width:420px;width:90%;text-align:center}#ov h2{margin:.2em 0;color:var(--blood)}#ov button{display:block;width:100%;margin:8px 0}
+#c3{position:fixed;inset:0;width:100%;height:100%;z-index:0}.wrap{position:relative;z-index:1}.pl{background:#0d0808cc}.mid{background:linear-gradient(#0000,#000a,#0000)}.hand{perspective:600px}.card{transform:rotateX(14deg);box-shadow:0 8px 14px #000}.card:hover{transform:rotateX(0) translateY(-6px)}.card.sel{transform:rotateX(0) translateY(-12px)}
+@media(max-width:560px){.modes{grid-template-columns:1fr}.card{width:68px;height:100px}.card .i{font-size:32px}}
+</style></head><body>
+<canvas id="c3"></canvas><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script><div id="fl"></div><div id="msg"></div><div id="ov"></div>
+<div class="wrap" id="app"></div>
+<script>
+const LIVE="實彈",BLANK="空包彈",MAXI=8,TL=50;
+const B=["放大鏡","鋸子","啤酒","香菸","手銬"],P=B.concat(["過期藥物","腎上腺素","逆轉器","一次性手機"]);
+const IT={
+放大鏡:["🔍","偷看當前槍管內第一發子彈類型（實彈／空包彈）。消除不確定性，確保下一步決策 100% 正確。"],
+鋸子:["🪚","將霰彈槍鋸短，使下一發實彈傷害由 1 變為 2。配合放大鏡或高實彈機率時進行爆發輸出。"],
+啤酒:["🍺","退掉當前槍管內的第一發子彈，並向雙方展示該子彈類型。強制跳過不確定或已知不有利的子彈。"],
+香菸:["🚬","恢復 1 點血量（無法超過當前關卡血量上限）。提高容錯率，拉長對局生存空間。"],
+手銬:["⛓️","限制目標對手跳過其下一個回合。連續獲得兩次完整的操作／開槍權利。"],
+過期藥物:["💊","40% 機率恢復 2 點血量，60% 機率扣除 1 點血量。高風險博弈道具。"],
+腎上腺素:["💉","強制偷取並立即使用對方的一項道具。打亂對方策略，逆轉戰局。"],
+逆轉器:["🔁","將當前槍管內的第一發子彈屬性反轉（實彈變空包，空包變實彈）。改變當前局勢機率。"],
+一次性手機:["📱","可以隨機知道第幾發子彈為實彈或是空包彈。提示的第幾發是依照目前槍內剩餘子彈往後數，而非初始子彈數。"]};
+const $=s=>document.querySelector(s),rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),sleep=t=>new Promise(r=>setTimeout(r,t));
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let g=null,tmr=null,busy=false,sel=null,lastClick=0;
+
+function newGame(mode,names){g={mode,pool:mode=="beginner"?B:P,time:mode=="pro"?TL:null,round:0,cur:0,chamber:[],total:0,live:0,saw:false,decap:false,peek:null,roundOver:false,log:[],pl:names.map(n=>({name:n,hp:0,max:0,items:[],cuff:false,wins:0}))}}
+/* ---------- 關卡 ---------- */
+function settings(){
+  if(g.mode=="pro")return{hp:rnd(3,6),rule:"r25"};
+  return g.round==1?{hp:2,rule:"none"}:g.round==2?{hp:4,rule:"two"}:{hp:6,rule:"r14"};
+}
+function nextRound(){
+  $("#ov").className="";g.round++;const s=settings();
+  const keep=g.mode=="beginner"&&g.round==3;
+  g.pl.forEach(p=>{p.hp=p.max=s.hp;if(!keep)p.items=[];p.cuff=false});
+  g.saw=false;g.decap=false;g.peek=null;g.roundOver=false;g.cur=rnd(0,1);g.log=[];
+  say(`第 ${g.round} 局開始！雙方血量 ${s.hp}`);
+  give(s.rule);reload(true);begin();
+}
+function give(rule){
+  if(rule=="none")return;
+  g.pl.forEach(p=>{
+    const n=rule=="two"?2:rule=="r25"?rnd(2,5):rnd(1,4);let got=0;
+    for(let i=0;i<n;i++)if(p.items.length<MAXI){p.items.push(g.pool[rnd(0,g.pool.length-1)]);got++}
+    log(`${p.name} 獲得 ${got} 個道具${got<n?"（已達上限）":""}`);
+  });
+}
+function reload(first){
+  const total=rnd(2,8),min=Math.ceil(total/3),live=rnd(min,total-min);
+  const c=Array(live).fill(LIVE).concat(Array(total-live).fill(BLANK));
+  for(let i=c.length-1;i>0;i--){const j=rnd(0,i);[c[i],c[j]]=[c[j],c[i]]}
+  g.chamber=c;g.total=total;g.live=live;g.peek=null;
+  say(`裝填：${live} 發實彈、${total-live} 發空包彈`);
+  if(!first){
+    if(g.mode=="pro")give("r25");
+    else if(g.round==2)give("two");
+    else if(g.round==3)give("r14");
+  }
+}
+/* ---------- 回合 ---------- */
+function begin(){
+  Gun.aim(null);busy=false;const p=g.pl[g.cur];
+  if(p.cuff){p.cuff=false;say(`${p.name} 被手銬銬住，本回合跳過！`);g.cur=1-g.cur;return begin()}
+  if(!g.chamber.length)reload(false);
+  sel=null;render();startTimer();
+}
+function startTimer(){
+  stopTimer();if(!g.time)return;const end=Date.now()+g.time*1000;g.tend=end;
+  tmr=setInterval(()=>{
+    const r=(end-Date.now())/1000,b=$("#tb");if(b)b.style.width=Math.max(0,r/g.time*100)+"%";
+    if(r<=0){stopTimer();say("時間到！自動對對手開槍");doShoot(1)}
+  },200);
+}
+function stopTimer(){clearInterval(tmr);tmr=null;if(g)g.tend=null}
+function chooseTarget(){
+  if(isBusy()||g.roundOver||g.cur!=me)return;const p=g.pl[g.cur],o=g.pl[1-g.cur];
+  ov(`<h2>要對誰開槍？</h2><button onclick="shootAs(0)">對自己（${esc(p.name)}）<br><small>空包彈則保留回合</small></button>
+  <button onclick="shootAs(1)">對對手（${esc(o.name)}）</button><button onclick="ov()">取消</button>`);
+}
+async function doShoot(t){
+  if(busy||g.roundOver)return;busy=true;stopTimer();ov();
+  const sh=g.pl[g.cur],op=g.pl[1-g.cur],tg=t?op:sh,shell=g.chamber.shift();g.peek=null;
+  const dmg=shell==LIVE?(g.saw?2:1):0,saw=g.saw;g.saw=false;Gun.aim(t?1-g.cur:g.cur);
+  render();say(`${sh.name} 對${t?op.name:"自己"}開槍……`);await sleep(1000);
+  if(shell==LIVE){tg.hp=Math.max(0,tg.hp-dmg);Gun.fire(1);flash("live");say(`實彈！${tg.name} 損失 ${dmg} 點血量${saw?"（鋸子加成）":""}`)}
+  else{Gun.fire(0);flash("blank");say("空包彈，沒有造成傷害")}
+  render();await sleep(1300);
+  if(checkWin())return;
+  if(g.pl.every(p=>p.hp==1)&&!g.decap&&(g.mode=="pro"||g.round==3)){g.decap=true;say("進入【斬首模式】！回復類道具失效");await sleep(800)}
+  if(!(t==0&&shell==BLANK))g.cur=1-g.cur;else say("對自己打出空包彈，保留回合！");
+  begin();
+}
+/* ---------- 道具 ---------- */
+const FX={
+放大鏡(u){g.peekBy=g.pl.indexOf(u);g.peek=g.chamber[0];say(`${u.name} 使用了放大鏡`);priv(g.peekBy,`膛內第一發是【${g.chamber[0]}】`);return true},
+鋸子(){if(g.saw){toast("鋸子已經啟動，不能重複使用");return false}g.saw=true;say("下一發實彈傷害變成 2 點！");return true},
+啤酒(){const s=g.chamber.shift();g.peek=null;say(`退出了一發【${s}】`);if(!g.chamber.length)reload(false);return true},
+香菸(u){if(g.decap){toast("斬首模式中無法回血");return false}if(u.hp>=u.max){toast("血量已滿，無法使用香菸");return false}u.hp++;say(`${u.name} 回復 1 點血量`);return true},
+手銬(u,o){if(o.cuff){toast("對手已經被銬住了");return false}o.cuff=true;say(`${o.name} 下一回合將被跳過！`);return true},
+過期藥物(u){if(g.decap){toast("斬首模式中無法使用過期藥物");return false}
+  if(Math.random()<.4){const h=Math.min(2,u.max-u.hp);u.hp+=h;say(`運氣不錯！回復 ${h} 點血量`)}else{u.hp=Math.max(0,u.hp-1);say("藥物有毒！損失 1 點血量")}return true},
+async 腎上腺素(u,o){
+  const st=o.items.filter(i=>i!="腎上腺素");if(!st.length){toast("對手沒有可以偷取的道具");return false}
+  const k=g.steal==null?-1:g.steal;g.steal=null;
+  if(k<0)return false;const it=st[k];o.items.splice(o.items.indexOf(it),1);
+  if(await FX[it](u,o)){say(`成功偷取並使用了【${it}】`);return true}
+  o.items.push(it);toast("該道具目前無法使用，已歸還對手");return false},
+逆轉器(){g.chamber[0]=g.chamber[0]==LIVE?BLANK:LIVE;g.peek=null;say("子彈已被反轉（但你不知道變成什麼）");return true},
+一次性手機(u){const p=rnd(1,g.chamber.length);say(`${u.name} 使用了一次性手機`);priv(g.pl.indexOf(u),`槍內第 ${p} 發子彈是【${g.chamber[p-1]}】`);return true}};
+async function useItem(pi,idx){
+  if(busy||g.roundOver||pi!==g.cur)return;
+  const u=g.pl[pi],o=g.pl[1-pi],item=u.items[idx];busy=true;stopTimer();
+  const ok=await FX[item](u,o);
+  if(ok)u.items.splice(u.items.indexOf(item),1);
+  sel=null;busy=false;render();
+  if(ok)await sleep(900);
+  if(!checkWin())startTimer();
+}
+/* ---------- 勝負 ---------- */
+function checkWin(){
+  const i=g.pl.findIndex(p=>p.hp<=0);if(i<0)return false;
+  g.roundOver=true;stopTimer();const w=g.pl[1-i];w.wins++;render();
+  const fin=w.wins>=2,score=`${esc(g.pl[0].name)} ${g.pl[0].wins} : ${g.pl[1].wins} ${esc(g.pl[1].name)}`;
+  setTimeout(()=>{
+    if(!fin)ov(`<h2>第 ${g.round} 局結束</h2><p>【${esc(w.name)}】獲勝</p><p>${score}</p><button onclick="nextRound()">進入下一局</button>`);
+    else{const nm=g.pl.map(p=>p.name);window._nm=nm;
+      ov(`<h2>遊戲結束</h2><p>最終勝利者：【${esc(w.name)}】</p><p>${score}</p><p>想要再賭一場嗎？來吧，賭一把大的……</p>
+      <button onclick="again('beginner')">再玩一場【新手模式】</button><button onclick="again('pro')">挑戰【進階模式】</button><button onclick="menu(window._nm)">結束遊戲</button>`)}
+  },1000);
+  return true;
+}
+function again(m){const n=window._nm;menu(n);start(m)}
+/* ---------- 顯示 ---------- */
+function say(t){log(t);const m=$("#msg");m.textContent=t;m.className="";void m.offsetWidth;m.className="show"}
+function toast(t){const m=$("#msg");m.textContent=t;m.className="";void m.offsetWidth;m.className="show"}
+function log(t){g.log.unshift(t);g.log=g.log.slice(0,7)}
+function flash(k){const f=$("#fl");f.className="";void f.offsetWidth;f.className=k;if(k=="live"){const a=$("#app");a.classList.remove("shake");void a.offsetWidth;a.classList.add("shake")}}
+function ov(h){const o=$("#ov");if(!h){o.className="";o.innerHTML="";return}o.innerHTML=`<div class="box">${h}</div>`;o.className="on"}
+const bolt=f=>`<svg viewBox="0 0 22 26"><path d="M13 0 3 14h6L6 26 19 9h-7z" fill="${f?"#f3efe6":"#1d1515"}" stroke="${f?"#fff":"#4a3f39"}" stroke-width="1"/></svg>`;
+function plHTML(i){
+  const p=g.pl[i],cur=i==g.cur&&!g.roundOver;
+  let h=`<div class="pl ${cur?"cur":""}"><div class="plate"><span class="nm">${esc(p.name)}${i==me?"（你）":""}${cur?" ▶":""}</span>
+  <span class="bolts">${Array.from({length:p.max},(_,k)=>bolt(k<p.hp)).join("")}</span>
+  <span class="pill">勝場 ${p.wins}</span>${p.cuff?'<span class="tag">被銬住</span>':""}</div><div class="hand">`;
+  h+=p.items.length?p.items.map((it,k)=>`<div class="card ${sel&&sel.p==i&&sel.k==k?"sel":""} ${cur?"":"dim"}" data-p="${i}" data-k="${k}"><div class="n">${it}</div><div class="i">${IT[it][0]}</div></div>`).join(""):'<span class="none">（沒有道具）</span>';
+  return h+"</div></div>";
+}
+function render(){
+  const o=g.pl[1-g.cur],it=sel&&g.pl[sel.p].items[sel.k];
+  $("#app").innerHTML=`<div class="top"><span>房間 <b>${code.toUpperCase()}</b>　第 <b>${g.round}</b> 局　${g.mode=="pro"?"進階模式":"新手模式"}</span>
+  <span>${esc(g.pl[0].name)} <b>${g.pl[0].wins}</b> : <b>${g.pl[1].wins}</b> ${esc(g.pl[1].name)}</span></div>
+  ${netMsg?`<div class="pill red" style="text-align:center;margin:6px 0">${netMsg}</div>`:""}${plHTML(1-me)}
+  <div class="mid"><div class="stat"><span class="pill">槍內剩餘 ${g.chamber?g.chamber.length:g.n} 發</span>
+  <span class="pill">本次裝填：實彈 ${g.live}・空包 ${g.total-g.live}</span>
+  ${g.saw?'<span class="pill red">鋸子啟動</span>':""}${g.decap?'<span class="pill red">斬首模式</span>':""}
+  ${g.peek&&g.peekBy==me?`<span class="pill red">下一發：${g.peek}</span>`:""}</div>
+  <button id="fire" onclick="chooseTarget()" ${isBusy()||g.roundOver||g.cur!=me?"disabled":""}>開　槍</button>
+  ${g.time?'<div class="tbar"><div id="tb"></div></div>':""}
+  <div id="info">${it?`<b>${it}</b><br>${IT[it][1]}<br><i>${sel.p!=me?"這是對手的道具":g.cur!=me?"現在不是你的回合":"再點一下即可使用（雙擊）"}</i>`:"點擊道具卡查看功能；快速點兩下使用。"}</div>
+  <div id="log">${g.log.map(l=>`<div>${esc(l)}</div>`).join("")}</div></div>
+  ${plHTML(me)}`;
+}
+$("#app").addEventListener("click",e=>{
+  const c=e.target.closest(".card");if(!c||!g||isBusy())return;
+  const p=+c.dataset.p,k=+c.dataset.k,now=Date.now();
+  if(sel&&sel.p==p&&sel.k==k&&now-lastClick<500){useCard(p,k);return}
+  sel={p,k};lastClick=now;render();
+});
+window.Gun={aim(){},fire(){}};
+try{(function(){
+const cv=$("#c3"),R=new THREE.WebGLRenderer({canvas:cv,antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,2));
+const S=new THREE.Scene();S.background=new THREE.Color(0x050303);S.fog=new THREE.Fog(0x050303,5,14);
+const C=new THREE.PerspectiveCamera(50,1,.1,40);
+const mat=(c,m,r)=>new THREE.MeshStandardMaterial({color:c,metalness:m,roughness:r});
+const add=(g,m,x,y,z)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);S.add(o);return o};
+S.add(new THREE.AmbientLight(0x442222,.7));
+const L=new THREE.PointLight(0xff6a40,1.8,16);L.position.set(0,3,0);S.add(L);
+add(new THREE.BoxGeometry(6,.3,3.8),mat(0x2b1b14,.1,.9),0,-.2,0);
+add(new THREE.PlaneGeometry(40,40),mat(0x0a0606,0,1),0,-2,0).rotation.x=-Math.PI/2;
+add(new THREE.CylinderGeometry(.02,.02,3,6),mat(0x222222,0,1),0,4.5,0);
+add(new THREE.SphereGeometry(.22,16,12),new THREE.MeshBasicMaterial({color:0xffb080}),0,3,0);
+const dk=mat(0x0c0808,0,1),eye=new THREE.MeshBasicMaterial({color:0xff2020});
+add(new THREE.CylinderGeometry(.5,.8,2.2,12),dk,0,.9,-3.6);add(new THREE.SphereGeometry(.4,16,12),dk,0,2.4,-3.6);
+add(new THREE.SphereGeometry(.05,8,8),eye,-.15,2.45,-3.2);add(new THREE.SphereGeometry(.05,8,8),eye,.15,2.45,-3.2);
+const gun=new THREE.Group();gun.position.y=.05;S.add(gun);
+const part=(g,m,x,y,rz)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,0);if(rz)o.rotation.z=rz;gun.add(o)};
+part(new THREE.CylinderGeometry(.05,.05,2.2,12),mat(0x8a8a8a,.9,.3),.7,.1,Math.PI/2);
+part(new THREE.CylinderGeometry(.04,.04,1.6,12),mat(0x666666,.9,.3),.5,-.02,Math.PI/2);
+part(new THREE.BoxGeometry(.8,.12,.14),mat(0x4a2a18,.1,.8),-.7,.05,0);
+part(new THREE.BoxGeometry(.5,.14,.1),mat(0x4a2a18,.1,.8),.3,-.08,0);
+const FL=new THREE.PointLight(0xff8040,0,6);FL.position.set(1.9,.2,0);gun.add(FL);
+let tg=null,kick=0,fl=0;
+function rs(){const w=innerWidth,h=innerHeight;R.setSize(w,h,false);C.aspect=w/h;C.fov=w/h<1?75:50;C.updateProjectionMatrix()}
+addEventListener("resize",rs);rs();
+function loop(t){requestAnimationFrame(loop);
+ C.position.set(Math.sin(t/3000)*.3,3.4,5.6);C.lookAt(0,.4,-.3);
+ const a=tg==null?.45+Math.sin(t/1500)*.1:(tg==0?Math.PI/2:-Math.PI/2);
+ gun.rotation.y+=(a-gun.rotation.y)*.08;gun.rotation.z=kick*.25;kick*=.9;
+ FL.intensity=fl;fl*=.8;
+ L.intensity=Math.random()<.02?.4:1.6+Math.random()*.3;
+ R.render(S,C)}
+requestAnimationFrame(loop);
+window.Gun={aim:i=>{tg=i},fire:live=>{kick=1;fl=live?6:1.5;FL.color.set(live?0xff5020:0xdddddd)}};
+})()}catch(e){console.error(e)}
+/* ---------- 雙人連線 ---------- */
+let R=null,me=0,isHost=true,code="",myName="",mode0="beginner",guestPeer=null,hostPeer=null,netMsg="",gEnd=null,endShown=false,hi=null,bi=null,gt=null;
+const toastL=toast,ov0=ov,flash0=flash,Gun0=window.Gun,say0=say,toast0=toast,r0=render,nr0=nextRound;
+const net=(t,d)=>{if(R)R.emit(t,d).catch(()=>{})};
+const isBusy=()=>isHost?busy:!!(g&&g.bz);
+const snap=()=>({c:code,mode:g.mode,time:g.time,round:g.round,cur:g.cur,total:g.total,live:g.live,n:g.chamber.length,saw:g.saw,decap:g.decap,roundOver:g.roundOver,log:g.log.slice(0,5),pl:g.pl,peek:g.peek,peekBy:g.peekBy,end:g.endHtml||null,bz:busy,tl:g.tend?Math.max(0,(g.tend-Date.now())/1000):null});
+function sendState(){if(isHost&&R&&g&&guestPeer)net("state",snap())}
+window.Gun={aim:i=>{Gun0.aim(i);if(isHost)net("fx",{aim:i})},fire:l=>{Gun0.fire(l);if(isHost)net("fx",{fire:l})}};
+flash=function(k){flash0(k);if(isHost)net("fx",{fl:k})};
+say=function(t){say0(t);if(isHost)net("say",{t})};
+toast=function(t){if(!g||g.cur==me)toast0(t);if(isHost&&g)net("toast",{t,to:g.cur})};
+render=function(){r0();sendState()};
+ov=function(h){ov0(h);if(isHost&&R&&g&&h&&(h.includes("局結束")||h.includes("遊戲結束"))){g.endHtml=h.replace(/<button[\s\S]*?<\/button>/g,"")+"<p>等待房主操作……</p>";sendState()}};
+nextRound=function(){g.endHtml=null;nr0()};
+again=function(m){const n=g.pl.map(p=>p.name);mode0=m;newGame(m,n);nextRound()};
+function priv(i,t){if(i==me)toastL(t);else net("priv",{to:i,t})}
+function act(a){if(isHost)hostAct(me,a);else net("act",{a})}
+function hostAct(i,a){
+  if(!g||busy||g.roundOver||i!=g.cur||!a)return;
+  if(a.t=="shoot")doShoot(a.target?1:0);
+  else if(a.t=="item"&&g.pl[i].items[a.k]){g.steal=a.s==null?null:+a.s;useItem(i,a.k)}
+}
+function shootAs(t){ov();act({t:"shoot",target:t})}
+function useCard(p,k){
+  if(p!=me){toastL("這是對手的道具");return}
+  if(g.cur!=me||isBusy()||g.roundOver){toastL("還沒輪到你");return}
+  if(g.pl[me].items[k]=="腎上腺素"){
+    const st=g.pl[1-me].items.filter(i=>i!="腎上腺素");
+    if(!st.length){toastL("對手沒有可以偷取的道具");return}
+    ov(`<h2>偷取哪一項道具？</h2>`+st.map((it,i)=>`<button onclick="ov();act({t:'item',k:${k},s:${i}})">${it}</button>`).join("")+`<button onclick="ov()">取消</button>`);
+  }else act({t:"item",k});
+}
+function leave(){if(R){R.leave().catch(()=>{});R=null}clearInterval(hi);clearInterval(bi);clearInterval(gt);guestPeer=hostPeer=null;netMsg="";endShown=false;stopTimer()}
+function menu(){
+  leave();g=null;$("#ov").className="";
+  $("#app").innerHTML=`<h1>惡魔賭局</h1><div class="sub">雙人連線對戰・三局兩勝</div>
+  <div class="box"><label>你的名稱<input id="n0" maxlength="10" placeholder="玩家" value="${esc(myName)}"></label>
+  <div class="modes"><button onclick="createRoom('beginner')"><b>建立房間：新手</b>不限時、道具種類較少</button>
+  <button onclick="createRoom('pro')"><b>建立房間：進階</b>限時 ${TL} 秒、全部道具</button></div>
+  <label style="display:block;margin-top:14px">已有房間代碼？<input id="jc" maxlength="5" placeholder="輸入 5 個字母"></label>
+  <button style="width:100%" onclick="joinRoom()">加入房間</button><div id="ls" class="sub" style="margin:12px 0 0"></div></div>`;
+}
+const lmsg=t=>{const e=$("#ls");if(e)e.textContent=t};
+async function openRoom(c){
+  myName=($("#n0").value.trim()||"玩家").slice(0,10);
+  const rm=window.claude?await claude.use("room"):null;
+  if(!rm){lmsg("目前無法使用連線功能：請登入 claude.ai，並由頁面擁有者邀請你。");return null}
+  try{R=await rm.join("r"+c);code=c;return R}catch(e){lmsg("無法加入房間（"+(e&&e.code||"錯誤")+"）");return null}
+}
+async function createRoom(mode){
+  const c=Array.from({length:5},()=>"abcdefghjkmnpqrstuvwxyz"[rnd(0,22)]).join("");
+  lmsg("建立房間中……");if(!await openRoom(c))return;
+  isHost=true;me=0;mode0=mode;g=null;
+  $("#app").innerHTML=`<h1>惡魔賭局</h1><div class="box" style="text-align:center"><div class="sub">把房間代碼告訴對手</div>
+  <div style="font-size:56px;letter-spacing:.3em;font-weight:900;color:#fff">${c.toUpperCase()}</div><div class="sub">等待對手加入……（${mode=="pro"?"進階":"新手"}模式）</div><button onclick="menu()">取消</button></div>`;
+  R.onPeers(()=>{const n=R.peers().filter(p=>p.kind=="viewer").length;netMsg=g&&n<2?"對手已離線，等待重新連線……":"";if(g)render()});
+  R.on("hello",m=>{
+    if(guestPeer&&m.peer!=guestPeer&&R.peers().some(p=>p.peer==guestPeer))return;
+    guestPeer=m.peer;
+    if(!g){newGame(mode0,[myName,String(m.data&&m.data.name||"玩家2").slice(0,10)]);nextRound()}else sendState();
+  });
+  R.on("act",m=>{if(m.peer==guestPeer&&m.data)hostAct(1,m.data.a)});
+  bi=setInterval(sendState,4000);
+}
+async function joinRoom(){
+  const c=($("#jc").value||"").trim().toLowerCase();if(!/^[a-z]{5}$/.test(c)){lmsg("請輸入 5 個字母的房間代碼");return}
+  lmsg("連線中……");if(!await openRoom(c))return;
+  isHost=false;me=1;
+  $("#app").innerHTML=`<h1>惡魔賭局</h1><div class="box" style="text-align:center"><div class="sub">已進入房間 ${c.toUpperCase()}，等待房主開始……</div><button onclick="menu()">離開</button></div>`;
+  R.onPeers(()=>{const n=R.peers().filter(p=>p.kind=="viewer").length;netMsg=g&&n<2?"房主已離線，等待重新連線……":"";if(g)render()});
+  const fromHost=m=>(hostPeer=hostPeer||m.peer)==m.peer;
+  R.on("state",m=>{if(!fromHost(m)||!m.data||m.data.c!=code)return;
+    clearInterval(hi);g=m.data;gEnd=g.tl!=null?Date.now()+g.tl*1000:null;
+    if(g.end&&!endShown){endShown=true;ov0(`<div>${g.end}</div>`)}else if(!g.end&&endShown){endShown=false;ov0()}
+    render()});
+  R.on("say",m=>{if(fromHost(m)&&m.data)toastL(String(m.data.t))});
+  R.on("toast",m=>{if(fromHost(m)&&m.data&&m.data.to==me)toastL(String(m.data.t))});
+  R.on("priv",m=>{if(fromHost(m)&&m.data&&m.data.to==me)toastL(String(m.data.t))});
+  R.on("fx",m=>{const d=m.data;if(!fromHost(m)||!d)return;if("aim"in d)Gun0.aim(d.aim);if("fire"in d)Gun0.fire(d.fire);if(d.fl)flash0(d.fl)});
+  const hello=()=>net("hello",{name:myName});hello();hi=setInterval(hello,1500);
+  gt=setInterval(()=>{const b=$("#tb");if(b&&gEnd&&g)b.style.width=Math.max(0,(gEnd-Date.now())/1000/g.time*100)+"%"},250);
+}
+
+menu();
+</script></body></html>
